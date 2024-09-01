@@ -4,7 +4,9 @@
     "description": "",
     "main": "dist/index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "tc": "tsc --noEmit",
+        "tc:watch": "tsc --noEmit --watch",
+        "build": "tsc"
     },
     "author": "André Thomas",
     "license": "ISC"

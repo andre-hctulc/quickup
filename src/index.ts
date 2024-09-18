@@ -5,7 +5,7 @@ export class SetupError extends Error {
 
     static fromVarSetup(err: VarSetup) {
         return new SetupError(
-            err.errInfo || `Environment variable ${err.name ? "'"+err.name + "' " : ""}not set or invalid`
+            err.errInfo || `Environment variable ${err.name ? "'" + err.name + "' " : ""}not set or invalid`
         );
     }
 }
@@ -50,4 +50,9 @@ export function varBool(value: any, setup: VarSetup = {}): boolean {
     const v = varValue(value, setup);
     if (typeof v === "string") return v.toLowerCase() === "true";
     return !!v;
+}
+
+export function varStr(value: any, setup: VarSetup = {}): string {
+    if (typeof value !== "string") throw SetupError.fromVarSetup(setup);
+    return varValue(value, setup);
 }

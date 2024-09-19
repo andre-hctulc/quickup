@@ -49,7 +49,7 @@ export function varInt(value: string, setup: VarSetup = {}) {
 export function varBool(value: any, setup: VarSetup = {}): boolean {
     const v = varValue(value, setup);
     if (typeof v === "string") return v.toLowerCase() === "true";
-    return !!v;
+    return v === true;
 }
 
 export function varStr(value: any, setup: VarSetup = {}): string {

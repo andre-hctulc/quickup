@@ -3,6 +3,10 @@
     "version": "0.0.1",
     "description": "",
     "main": "dist/index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/andre-hctulc/quickup.git"
+    },
     "scripts": {
         "tc": "tsc --noEmit",
         "tc:watch": "tsc --noEmit --watch",

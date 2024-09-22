@@ -5,20 +5,20 @@ Setup package.
 ## Usage
 
 ```ts
-const val = varValue(someNum, {
+const val = varValue(value, {
     required: true, // wether or not to allow undefined
     nullable: false, // Allow null? Defaults to false
 });
 
-const region = varValue(someRegion, {
+const region = varValue(value, {
     defaultValue: "eu-central-1",
 });
 
-const project = varStr(someValue);
+const project = varStr(value);
 
-const maxInstances = varNum(someNum);
+const maxInstances = varNum(value);
 
-const devMode = varBool(someNum); // true for: true or "true" (case insensitive)
+const devMode = varBool(value); // true for: true or "true" (case insensitive)
 
 const apiKey = envVar("API_KEY");
 ```

@@ -33,7 +33,7 @@ export type LoadVarOptions = {
 } & Omit<VarSetup, "name" | "label">;
 
 /**
- * Manages async variables. Use it for secrets, configurations, etc.
+ * Manages variables, that must be initialized async. Use it for secrets, configurations, etc.
  */
 export class AsyncVarsManager {
     private _cache: { [key: string]: { value: any; clear: any } } = {};
@@ -65,26 +65,26 @@ export class AsyncVarsManager {
         const cacheDuration = options.cacheDuration ?? this._cacheDuration;
         let cached = this._cache[varName];
 
-        // return cached value
+        // return cached value, if cache enabled
         if (cached && cacheDuration > 0) return cached.value;
 
         let value: any;
+        const varSetupOptions = { ...options, name: varName, label: this._varLabel || "Variable" };
 
+        // load from env (ignore cache in this case)
         if (options.loadFromEnv) {
-            // load from env
-            value = envVar(varName, options);
-        } else {
+            value = envVar(varName, varSetupOptions);
+        }
+        // load with loader
+        else {
             try {
                 value = await this._loader(varName);
             } catch (err) {
-                throw SetupError.fromVarSetup(
-                    { ...options, name: varName, label: this._varLabel || "Variable" },
-                    err
-                );
+                throw SetupError.fromVarSetup(varSetupOptions, err);
             }
 
             // validate/parse value
-            value = varValue(value, options);
+            value = varValue(value, varSetupOptions);
         }
 
         // update cached var value (async load before)
@@ -110,7 +110,7 @@ export class AsyncVarsManager {
         this._cache = {};
     }
 
-    clearEntry(varName: string): boolean {
+    removeEntry(varName: string): boolean {
         return delete this._cache[varName];
     }
 

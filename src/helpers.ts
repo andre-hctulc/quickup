@@ -36,7 +36,7 @@ export function varValue(value: any, setup: VarSetup = {}): any {
  * Gets the value of an environment variable.
  * @returns A string. If the variable is not set, it will return an empty string.
  */
-export function envVar(varName: string, setup: Omit<VarSetup, "name"> = {}): string {
+export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): string {
     return (
         varValue(process.env[varName], {
             ...setup,

@@ -31,16 +31,20 @@ export interface VarSetup {
      * @default "Environment Variable"
      */
     varLabel?: string;
+    fallbackNull?: boolean;
 }
 
 export function varValue(value: any, setup: VarSetup = {}): any {
+    const hasDefault = setup.defaultVale !== undefined;
+
     if (value === undefined) {
         if (setup.required !== false) throw SetupError.fromVarSetup(setup);
-        if (setup.defaultVale) value = setup.defaultVale;
+        if (hasDefault) value = setup.defaultVale;
     }
 
-    if (!setup.nullable && value === null) {
-        throw SetupError.fromVarSetup(setup);
+    if (value === null) {
+        if (setup.fallbackNull && hasDefault) value = setup.defaultVale;
+        else if (!setup.nullable) throw SetupError.fromVarSetup(setup);
     }
 
     if (setup.check && !setup.check(value)) {

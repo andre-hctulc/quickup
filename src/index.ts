@@ -4,24 +4,38 @@ export class SetupError extends Error {
     }
 
     static fromVarSetup(err: VarSetup) {
-        return new SetupError(
-            err.errInfo || `Environment variable ${err.name ? "'" + err.name + "' " : ""}not set or invalid`
-        );
+        return new SetupError(errMessage(err.varLabel || "Environment Variable", err));
     }
 }
 
+function errMessage(varLabel: string, err: VarSetup) {
+    const tags = [err.nullable && "n", err.required === false ? "?" : "*", err.check && "c"]
+        .filter(Boolean)
+        .join(", ");
+
+    return (
+        err.errMessage || `${varLabel} ${err.name ? "'" + err.name + "'" : ""}(${tags}) not set or invalid`
+    );
+}
+
 export interface VarSetup {
+    /** @default true */
     required?: boolean;
+    /** @default false */
     nullable?: boolean;
-    errInfo?: string;
+    errMessage?: string;
     name?: string;
     defaultVale?: string;
     check?: (value: string | undefined) => boolean;
+    /**
+     * @default "Environment Variable"
+     */
+    varLabel?: string;
 }
 
 export function varValue(value: any, setup: VarSetup = {}): any {
     if (value === undefined) {
-        if (setup.required) throw SetupError.fromVarSetup(setup);
+        if (setup.required !== false) throw SetupError.fromVarSetup(setup);
         if (setup.defaultVale) value = setup.defaultVale;
     }
 
@@ -37,7 +51,12 @@ export function varValue(value: any, setup: VarSetup = {}): any {
 }
 
 export function envVar(varName: string, setup: Omit<VarSetup, "name"> = {}): string {
-    return varValue(process.env[varName], { ...setup, name: varName }) || "";
+    return (
+        varValue(process.env[varName], {
+            ...setup,
+            name: varName,
+        }) || ""
+    );
 }
 
 export function varInt(value: string, setup: VarSetup = {}) {

@@ -34,9 +34,12 @@ export type LoadVarOptions = {
 
 /**
  * Manages variables, that must be initialized async. Use it for secrets, configurations, etc.
+ *
+ * Note, that the parsed value is cached. This can be used to refine values, like deriving keys etc.
+ * Use the `LoadVarOptions.parse` option to parse values.
  */
 export class AsyncVarsManager {
-    private _cache: { [key: string]: { value: any; clear: any } } = {};
+    private _cache: { [key: string]: { value: any; timestamp: number } } = {};
     private _loader: (varName: string) => Promise<any>;
     private _cacheDuration: number;
     private _varLabel: string;
@@ -58,15 +61,17 @@ export class AsyncVarsManager {
     }
 
     /**
-     * Load the variable value. If the variable is already loaded, it will return the cached value.
+     * Load the variable value. If the variable is cached, it will return the cached value.
      * @throws `SetupError`
      */
-    async loadVar(varName: string, options: LoadVarOptions = {}): Promise<any> {
+    async loadVar<T = any>(varName: string, options: LoadVarOptions = {}): Promise<T> {
         const cacheDuration = options.cacheDuration ?? this._cacheDuration;
         let cached = this._cache[varName];
 
-        // return cached value, if cache enabled
-        if (cached && cacheDuration > 0) return cached.value;
+        // return cached value, if fresh
+        if (cached && cacheDuration != Infinity && cacheDuration > Date.now() - cached.timestamp) {
+            return cached.value;
+        }
 
         let value: any;
         const varSetupOptions = { ...options, name: varName, label: this._varLabel || "Variable" };
@@ -80,6 +85,7 @@ export class AsyncVarsManager {
             try {
                 value = await this._loader(varName);
             } catch (err) {
+                if (err instanceof SetupError) throw err;
                 throw SetupError.fromVarSetup(varSetupOptions, err);
             }
 
@@ -89,24 +95,16 @@ export class AsyncVarsManager {
 
         // update cached var value (async load before)
         cached = this._cache[varName];
-        if (cached.clear) clearTimeout(cached.clear);
 
         this._cache[varName] = {
             value,
-            clear:
-                cacheDuration == Infinity
-                    ? null
-                    : setTimeout(() => delete this._cache[varName], cacheDuration),
+            timestamp: Date.now(),
         };
 
         return value;
     }
 
     clearCache() {
-        // clear timeouts
-        Object.entries(this._cache).forEach(([key, { clear }]) => {
-            if (clear) clearTimeout(clear);
-        });
         this._cache = {};
     }
 

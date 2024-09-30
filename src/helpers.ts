@@ -1,7 +1,7 @@
 import { SetupError } from "./error";
 import { VarSetup } from "./types";
 
-export function varValue(value: any, setup: VarSetup = {}): any {
+export function varValue<T = any>(value: any, setup: VarSetup = {}): T {
     // parse default value
     const hasDefault = setup.defaultVale !== undefined;
 

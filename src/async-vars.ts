@@ -69,7 +69,7 @@ export class AsyncVarsManager {
         let cached = this._cache[varName];
 
         // return cached value, if fresh
-        if (cached && cacheDuration != Infinity && cacheDuration > Date.now() - cached.timestamp) {
+        if (cached && (cacheDuration == Infinity || cacheDuration > Date.now() - cached.timestamp)) {
             return cached.value;
         }
 

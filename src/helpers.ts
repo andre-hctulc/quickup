@@ -45,6 +45,28 @@ export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> 
     );
 }
 
+/**
+ * Gets the value of an environment variable as an integer.
+ */
+export function envVarInt(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): number {
+    return varInt(envVar(varName, setup), setup);
+}
+
+/**
+ * Gets the value of an environment variable as a number.
+ */
+export function envVarNum(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): number {
+    return varNum(envVar(varName, setup), setup);
+}
+
+/**
+ * Gets the value of an environment variable as boolean.
+ * By default the environment variable is not required and therefore will default to `false`.
+ */
+export function envVarBool(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): boolean {
+    return varBool(envVar(varName, { required: false, ...setup }), setup);
+}
+
 export function varInt(value: any, setup: Omit<VarSetup, "parse"> = {}): number {
     return varValue(value, {
         ...setup,

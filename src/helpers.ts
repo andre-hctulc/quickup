@@ -34,7 +34,7 @@ export function varValue<T = any>(value: any, setup: VarSetup = {}): T {
 
 /**
  * Gets the value of an environment variable.
- * @returns A string. If the variable is not set, it will return an empty string.
+ * @returns A string. Empty string if variable is not set.
  */
 export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): string {
     return (
@@ -46,21 +46,21 @@ export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> 
 }
 
 /**
- * Gets the value of an environment variable as an integer.
+ * Get the value of an environment variable as an integer.
  */
 export function envVarInt(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): number {
     return varInt(envVar(varName, setup), setup);
 }
 
 /**
- * Gets the value of an environment variable as a number.
+ * Get the value of an environment variable as a number.
  */
 export function envVarNum(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): number {
     return varNum(envVar(varName, setup), setup);
 }
 
 /**
- * Gets the value of an environment variable as boolean.
+ * Get the value of an environment variable as boolean.
  * By default the environment variable is not required and therefore will default to `false`.
  */
 export function envVarBool(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): boolean {
@@ -103,7 +103,7 @@ export function varBool(value: any, setup: Omit<VarSetup, "parse"> = {}): boolea
 }
 
 /**
- * Only accepts string values.
+ * Only accept string values.
  */
 export function varStr(value: any, setup: Omit<VarSetup, "parse"> = {}): string {
     return varValue(value, {

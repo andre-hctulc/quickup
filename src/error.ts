@@ -15,5 +15,8 @@ function errMessage(varLabel: string, err: VarSetup) {
         .filter(Boolean)
         .join(", ");
 
-    return err.errMessage || `${varLabel} '${err.name || "<unnamed>"}' (${tags}) not set or invalid`;
+    return (
+        err.errMessage ||
+        `${varLabel} ${err.name ? "'" + err.name + "'" : "<unnamed>"} (${tags}) not set or invalid`
+    );
 }

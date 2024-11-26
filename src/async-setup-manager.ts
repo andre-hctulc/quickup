@@ -2,7 +2,7 @@ import { SetupError } from "./error";
 import { envVar, varValue } from "./helpers";
 import { VarSetup } from "./types";
 
-export type AsyncVarsManagerInit = {
+export type AsyncSetupManagerInit = {
     /**
      * The variable loader function. It should return a promise that resolves to the variable value.
      */
@@ -28,7 +28,7 @@ export class AsyncSetupManager {
     private _loader: (varName: string) => Promise<any>;
     private _varLabel: string;
 
-    constructor(init: AsyncVarsManagerInit) {
+    constructor(init: AsyncSetupManagerInit) {
         this._loader = init.loadVar;
         this._varLabel = init.varLabel || "Variable";
     }

@@ -1,6 +1,6 @@
-import { SetupError } from "./error";
-import { envVar, varValue } from "./helpers";
-import { VarSetup } from "./types";
+import { SetupError } from "./error.js";
+import { envVar, varValue } from "./helpers.js";
+import { VarSetup } from "./types.js";
 
 export type AsyncSetupManagerInit = {
     /**

@@ -1,4 +1,4 @@
-import { VarSetup } from "./types";
+import { VarSetup } from "./types.js";
 
 export class SetupError extends Error {
     constructor(message: string, readonly cause: unknown = undefined) {

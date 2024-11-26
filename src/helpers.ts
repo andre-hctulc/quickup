@@ -1,5 +1,5 @@
-import { SetupError } from "./error";
-import { VarSetup } from "./types";
+import { SetupError } from "./error.js";
+import { VarSetup } from "./types.js";
 
 export function varValue<T = any>(value: any, setup: VarSetup = {}): T {
     // parse default value

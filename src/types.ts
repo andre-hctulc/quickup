@@ -9,7 +9,7 @@ export interface VarSetup {
      * Parses the value. If not set, it will return the value as is.
      */
     parse?: (value: unknown) => any;
-    defaultVale?: string;
+    defaultValue?: string;
     /**
      * @default "Environment Variable"
      */

@@ -1,12 +1,14 @@
 import { SetupError } from "./error.js";
 import { VarSetup } from "./types.js";
 
+type Concrete<T> = Omit<T, "required" | "nullable" | "fallbackNull" | "defaultValue" | "parse">;
+
 export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
     // parse default value
-    const hasDefault = setup.defaultVale !== undefined;
+    const hasDefault = setup.defaultValue !== undefined;
 
     if (hasDefault && (value === undefined || (setup.fallbackNull && value === null))) {
-        value = setup.defaultVale;
+        value = setup.defaultValue;
     }
 
     // user parse
@@ -45,37 +47,28 @@ export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> 
 /**
  * Attempt to parse a environment variable as an integer.
  */
-export function envVarInt(
-    varName: string,
-    setup: Omit<VarSetup, "name" | "parse" | "required" | "nullable"> = {}
-): number {
+export function envVarInt(varName: string, setup: Concrete<VarSetup> = {}): number {
     return varInt(envVar(varName, setup), setup);
 }
 
 /**
  * Attempt to parse a environment variable as a number.
  */
-export function envVarNum(
-    varName: string,
-    setup: Omit<VarSetup, "name" | "parse" | "required" | "nullable"> = {}
-): number {
+export function envVarNum(varName: string, setup: Concrete<VarSetup> = {}): number {
     return varNum(envVar(varName, setup), setup);
 }
 
 /**
  * Parse an environment variable as a boolean.
  */
-export function envVarBool(
-    varName: string,
-    setup: Omit<VarSetup, "name" | "parse" | "required" | "nullable"> = {}
-): boolean {
+export function envVarBool(varName: string, setup: Concrete<VarSetup> = {}): boolean {
     return varBool(envVar(varName, { required: false, ...setup }), setup);
 }
 
 /**
  * Attempt to parse teh value as an integer.
  */
-export function varInt(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): number {
+export function varInt(value: any, setup: Concrete<VarSetup> = {}): number {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -89,12 +82,10 @@ export function varInt(value: any, setup: Omit<VarSetup, "parse" | "required" | 
 /**
  * Accepts integers, undefined or null.
  */
-export function varOptInt(
-    value: any,
-    setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}
-): number | undefined {
+export function varOptInt(value: any, setup: Concrete<VarSetup> = {}): number | undefined {
     return varValue(value, {
         ...setup,
+        required: false,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -107,7 +98,7 @@ export function varOptInt(
 /**
  * Accept only numbers.
  */
-export function varNum(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): number {
+export function varNum(value: any, setup: Concrete<VarSetup> = {}): number {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -121,12 +112,10 @@ export function varNum(value: any, setup: Omit<VarSetup, "parse" | "required" | 
 /**
  * Accepts numbers, undefined or null.
  */
-export function varOptNum(
-    value: any,
-    setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}
-): number | undefined {
+export function varOptNum(value: any, setup: Concrete<VarSetup> = {}): number | undefined {
     return varValue(value, {
         ...setup,
+        required: false,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -141,7 +130,7 @@ export function varOptNum(
  *
  * @returns true for true, "true" (case insensitive) and 1, false otherwise.
  */
-export function varBool(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): boolean {
+export function varBool(value: any, setup: Concrete<VarSetup> = {}): boolean {
     return varValue(value, {
         ...setup,
         parse: (val) =>
@@ -152,7 +141,7 @@ export function varBool(value: any, setup: Omit<VarSetup, "parse" | "required" |
 /**
  * Only accept string values.
  */
-export function varStr(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): string {
+export function varStr(value: any, setup: Concrete<VarSetup> = {}): string {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -165,12 +154,10 @@ export function varStr(value: any, setup: Omit<VarSetup, "parse" | "required" | 
 /**
  * Accept strings or, undefined or null.
  */
-export function varOptStr(
-    value: any,
-    setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}
-): string | undefined {
+export function varOptStr(value: any, setup: Concrete<VarSetup> = {}): string | undefined {
     return varValue(value, {
         ...setup,
+        required: false,
         parse: (val) => {
             if (val == null) return undefined;
             if (val && typeof val !== "string") throw new TypeError("Not a string");

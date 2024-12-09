@@ -61,7 +61,7 @@ export function envVarNum(varName: string, setup: Omit<VarSetup, "name" | "parse
 
 /**
  * Get the value of an environment variable as boolean.
- * By default the environment variable is not required and therefore will default to `false`.
+ * By default the environment variable is not required and therefore will default to false.
  */
 export function envVarBool(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): boolean {
     return varBool(envVar(varName, { required: false, ...setup }), setup);
@@ -71,6 +71,21 @@ export function varInt(value: any, setup: Omit<VarSetup, "parse"> = {}): number 
     return varValue(value, {
         ...setup,
         parse: (val) => {
+            const num = parseInt(val as any);
+            if (!Number.isInteger(num)) throw new TypeError("Not an integer");
+            return num;
+        },
+    });
+}
+
+/**
+ * Accepts integers, undefined or null.
+ */
+export function varOptInt(value: any, setup: Omit<VarSetup, "parse"> = {}): number | undefined {
+    return varValue(value, {
+        ...setup,
+        parse: (val) => {
+            if (val == null) return undefined;
             const num = parseInt(val as any);
             if (!Number.isInteger(num)) throw new TypeError("Not an integer");
             return num;
@@ -90,9 +105,24 @@ export function varNum(value: any, setup: Omit<VarSetup, "parse"> = {}): number 
 }
 
 /**
+ * Accepts numbers, undefined or null.
+ */
+export function varOptNum(value: any, setup: Omit<VarSetup, "parse"> = {}): number | undefined {
+    return varValue(value, {
+        ...setup,
+        parse: (val) => {
+            if (val == null) return undefined;
+            const num = parseInt(val as any);
+            if (isNaN(num)) throw new TypeError("Not a number");
+            return num;
+        },
+    });
+}
+
+/**
  * Accepts all values.
  *
- * @returns `true` for `true`, `"true"` (case insensitive) and `1`, `false` otherwise.
+ * @returns true for true, "true" (case insensitive) and 1, false otherwise.
  */
 export function varBool(value: any, setup: Omit<VarSetup, "parse"> = {}): boolean {
     return varValue(value, {
@@ -111,6 +141,20 @@ export function varStr(value: any, setup: Omit<VarSetup, "parse"> = {}): string 
         parse: (val) => {
             if (val && typeof val !== "string") throw new TypeError("Not a string");
             return val || "";
+        },
+    });
+}
+
+/**
+ * Accept strings or, undefined or null.
+ */
+export function varOptStr(value: any, setup: Omit<VarSetup, "parse"> = {}): string | undefined {
+    return varValue(value, {
+        ...setup,
+        parse: (val) => {
+            if (val == null) return undefined;
+            if (val && typeof val !== "string") throw new TypeError("Not a string");
+            return val;
         },
     });
 }

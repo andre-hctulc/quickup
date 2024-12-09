@@ -2,7 +2,7 @@ import { SetupError } from "./error.js";
 import { envVar, varValue } from "./helpers.js";
 import { VarSetup } from "./types.js";
 
-export type AsyncSetupManagerInit = {
+export type SetupManagerInit = {
     /**
      * The variable loader function. It should return a promise that resolves to the variable value.
      */
@@ -23,12 +23,12 @@ export type LoadVarOptions = {
  * Manages variables, that are must be loaded async.
  * Values are cached indefinitely after the first load and can only be cleared with `clearCache`.
  */
-export class AsyncSetupManager {
+export class SetupManager {
     private _cache: { [key: string]: { value: any; timestamp: number } } = {};
     private _loader: (varName: string) => Promise<any>;
     private _varLabel: string;
 
-    constructor(init: AsyncSetupManagerInit) {
+    constructor(init: SetupManagerInit) {
         this._loader = init.loadVar;
         this._varLabel = init.varLabel || "Variable";
     }

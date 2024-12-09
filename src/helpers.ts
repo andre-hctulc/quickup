@@ -1,7 +1,7 @@
 import { SetupError } from "./error.js";
 import { VarSetup } from "./types.js";
 
-export function varValue<T = any>(value: any, setup: VarSetup = {}): T {
+export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
     // parse default value
     const hasDefault = setup.defaultVale !== undefined;
 
@@ -18,23 +18,20 @@ export function varValue<T = any>(value: any, setup: VarSetup = {}): T {
             throw SetupError.fromVarSetup(setup, err);
         }
     }
-    // default parse
-    else {
-        if (value === undefined && setup.required !== false) {
-            throw SetupError.fromVarSetup(setup);
-        }
 
-        if (value === null && !setup.nullable) {
-            throw SetupError.fromVarSetup(setup);
-        }
+    if (value === undefined && setup.required !== false) {
+        throw SetupError.fromVarSetup(setup);
     }
 
-    return value;
+    if (value === null && !setup.nullable) {
+        throw SetupError.fromVarSetup(setup);
+    }
+
+    return value as T;
 }
 
 /**
- * Gets the value of an environment variable.
- * @returns A string. Empty string if variable is not set.
+ * Environment variable value or empty string.
  */
 export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): string {
     return (
@@ -46,28 +43,39 @@ export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> 
 }
 
 /**
- * Get the value of an environment variable as an integer.
+ * Attempt to parse a environment variable as an integer.
  */
-export function envVarInt(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): number {
+export function envVarInt(
+    varName: string,
+    setup: Omit<VarSetup, "name" | "parse" | "required" | "nullable"> = {}
+): number {
     return varInt(envVar(varName, setup), setup);
 }
 
 /**
- * Get the value of an environment variable as a number.
+ * Attempt to parse a environment variable as a number.
  */
-export function envVarNum(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): number {
+export function envVarNum(
+    varName: string,
+    setup: Omit<VarSetup, "name" | "parse" | "required" | "nullable"> = {}
+): number {
     return varNum(envVar(varName, setup), setup);
 }
 
 /**
- * Get the value of an environment variable as boolean.
- * By default the environment variable is not required and therefore will default to false.
+ * Parse an environment variable as a boolean.
  */
-export function envVarBool(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): boolean {
+export function envVarBool(
+    varName: string,
+    setup: Omit<VarSetup, "name" | "parse" | "required" | "nullable"> = {}
+): boolean {
     return varBool(envVar(varName, { required: false, ...setup }), setup);
 }
 
-export function varInt(value: any, setup: Omit<VarSetup, "parse"> = {}): number {
+/**
+ * Attempt to parse teh value as an integer.
+ */
+export function varInt(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): number {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -81,7 +89,10 @@ export function varInt(value: any, setup: Omit<VarSetup, "parse"> = {}): number 
 /**
  * Accepts integers, undefined or null.
  */
-export function varOptInt(value: any, setup: Omit<VarSetup, "parse"> = {}): number | undefined {
+export function varOptInt(
+    value: any,
+    setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}
+): number | undefined {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -93,7 +104,10 @@ export function varOptInt(value: any, setup: Omit<VarSetup, "parse"> = {}): numb
     });
 }
 
-export function varNum(value: any, setup: Omit<VarSetup, "parse"> = {}): number {
+/**
+ * Accept only numbers.
+ */
+export function varNum(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): number {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -107,7 +121,10 @@ export function varNum(value: any, setup: Omit<VarSetup, "parse"> = {}): number 
 /**
  * Accepts numbers, undefined or null.
  */
-export function varOptNum(value: any, setup: Omit<VarSetup, "parse"> = {}): number | undefined {
+export function varOptNum(
+    value: any,
+    setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}
+): number | undefined {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -124,7 +141,7 @@ export function varOptNum(value: any, setup: Omit<VarSetup, "parse"> = {}): numb
  *
  * @returns true for true, "true" (case insensitive) and 1, false otherwise.
  */
-export function varBool(value: any, setup: Omit<VarSetup, "parse"> = {}): boolean {
+export function varBool(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): boolean {
     return varValue(value, {
         ...setup,
         parse: (val) =>
@@ -135,7 +152,7 @@ export function varBool(value: any, setup: Omit<VarSetup, "parse"> = {}): boolea
 /**
  * Only accept string values.
  */
-export function varStr(value: any, setup: Omit<VarSetup, "parse"> = {}): string {
+export function varStr(value: any, setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}): string {
     return varValue(value, {
         ...setup,
         parse: (val) => {
@@ -148,7 +165,10 @@ export function varStr(value: any, setup: Omit<VarSetup, "parse"> = {}): string 
 /**
  * Accept strings or, undefined or null.
  */
-export function varOptStr(value: any, setup: Omit<VarSetup, "parse"> = {}): string | undefined {
+export function varOptStr(
+    value: any,
+    setup: Omit<VarSetup, "parse" | "required" | "nullable"> = {}
+): string | undefined {
     return varValue(value, {
         ...setup,
         parse: (val) => {

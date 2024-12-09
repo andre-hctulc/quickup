@@ -7,7 +7,6 @@ export interface VarSetup {
     name?: string;
     /**
      * Parses the value. If not set, it will return the value as is.
-     * This also replaces `required` and `nullable` checks.
      */
     parse?: (value: unknown) => any;
     defaultVale?: string;

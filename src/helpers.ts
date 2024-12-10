@@ -52,10 +52,23 @@ export function envVarInt(varName: string, setup: Concrete<VarSetup> = {}): numb
 }
 
 /**
+ * Attempt to parse a environment variable as integer or undefined.
+ */
+export function envVarOptInt(varName: string, setup: Concrete<VarSetup> = {}): number {
+    return varInt(envVar(varName, setup), setup);
+}
+
+/**
  * Attempt to parse a environment variable as a number.
  */
 export function envVarNum(varName: string, setup: Concrete<VarSetup> = {}): number {
     return varNum(envVar(varName, setup), setup);
+}
+/**
+ * Attempt to parse a environment variable as number or undefined.
+ */
+export function envVarOptNum(varName: string, setup: Concrete<VarSetup> = {}): number | undefined {
+    return varOptNum(envVar(varName, setup), setup);
 }
 
 /**
@@ -145,8 +158,8 @@ export function varStr(value: any, setup: Concrete<VarSetup> = {}): string {
     return varValue(value, {
         ...setup,
         parse: (val) => {
-            if (val && typeof val !== "string") throw new TypeError("Not a string");
-            return val || "";
+            if (typeof val !== "string") throw new TypeError("Not a string");
+            return val;
         },
     });
 }
@@ -160,7 +173,7 @@ export function varOptStr(value: any, setup: Concrete<VarSetup> = {}): string | 
         required: false,
         parse: (val) => {
             if (val == null) return undefined;
-            if (val && typeof val !== "string") throw new TypeError("Not a string");
+            if (typeof val !== "string") throw new TypeError("Not a string");
             return val;
         },
     });

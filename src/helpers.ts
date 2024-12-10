@@ -4,13 +4,6 @@ import { VarSetup } from "./types.js";
 type Concrete<T> = Omit<T, "required" | "nullable" | "fallbackNull" | "defaultValue" | "parse">;
 
 export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
-    // parse default value
-    const hasDefault = setup.defaultValue !== undefined;
-
-    if (hasDefault && (value === undefined || (setup.fallbackNull && value === null))) {
-        value = setup.defaultValue;
-    }
-
     // user parse
     if (setup.parse) {
         try {
@@ -19,6 +12,13 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
             if (err instanceof SetupError) throw err;
             throw SetupError.fromVarSetup(setup, err);
         }
+    }
+
+    // parse default value
+    const hasDefault = setup.defaultValue !== undefined;
+
+    if (hasDefault && (value === undefined || (setup.fallbackNull && value === null))) {
+        value = setup.defaultValue;
     }
 
     if (value === undefined && setup.required !== false) {

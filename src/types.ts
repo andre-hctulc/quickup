@@ -1,6 +1,6 @@
 export interface VarSetup {
-    /** @default true */
-    required?: boolean;
+    /** @default false */
+    optional?: boolean;
     /** @default false */
     nullable?: boolean;
     errMessage?: string;
@@ -9,7 +9,7 @@ export interface VarSetup {
      * Parses the value. If not set, it will return the value as is.
      */
     parse?: (value: unknown) => any;
-    defaultValue?: string;
+    defaultValue?: any;
     /**
      * @default "Environment Variable"
      */

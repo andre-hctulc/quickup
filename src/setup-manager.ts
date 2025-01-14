@@ -8,6 +8,7 @@ export type SetupManagerInit = {
      */
     loadVar: (varName: string) => Promise<any>;
     varLabel?: string;
+    
 };
 
 export type LoadVarOptions = {
@@ -96,5 +97,9 @@ export class SetupManager {
 
     hasEntry(varName: string): boolean {
         return varName in this._cache;
+    }
+
+    getEntries() {
+        return Array.from(Object.entries(this._cache));
     }
 }

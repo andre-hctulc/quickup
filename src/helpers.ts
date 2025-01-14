@@ -2,6 +2,10 @@ import { SetupError } from "./error.js";
 import { VarSetup } from "./types.js";
 
 export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
+    if (value === undefined && !setup.optional) {
+        throw SetupError.fromVarSetup(setup);
+    }
+
     // user parse
     if (setup.parse) {
         try {
@@ -17,10 +21,6 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
 
     if (hasDefault && (value === undefined || (setup.fallbackNull && value === null))) {
         value = setup.defaultValue;
-    }
-
-    if (value === undefined && setup.required !== false) {
-        throw SetupError.fromVarSetup(setup);
     }
 
     if (value === null && !setup.nullable) {
@@ -73,7 +73,7 @@ export function envVarOptNum(varName: string, setup: VarSetup = {}): number | un
  * Parse an environment variable as a boolean.
  */
 export function envVarBool(varName: string, setup: VarSetup = {}): boolean {
-    return varBool(envVar(varName, { required: false, ...setup }), setup);
+    return varBool(envVar(varName, { optional: true, ...setup }), setup);
 }
 
 /**
@@ -84,7 +84,7 @@ export function varInt(value: any, setup: VarSetup = {}): number {
         ...setup,
         parse: (val) => {
             const num = parseInt(val as any);
-            if (!Number.isInteger(num)) throw new TypeError("Not an integer");
+            if (isNaN(num) || !Number.isInteger(num)) throw new TypeError("Not an integer");
             return num;
         },
     });
@@ -96,7 +96,7 @@ export function varInt(value: any, setup: VarSetup = {}): number {
 export function varOptInt(value: any, setup: VarSetup = {}): number | undefined {
     return varValue(value, {
         ...setup,
-        required: false,
+        optional: true,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -126,7 +126,7 @@ export function varNum(value: any, setup: VarSetup = {}): number {
 export function varOptNum(value: any, setup: VarSetup = {}): number | undefined {
     return varValue(value, {
         ...setup,
-        required: false,
+        optional: true,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -168,7 +168,7 @@ export function varStr(value: any, setup: VarSetup = {}): string {
 export function varOptStr(value: any, setup: VarSetup = {}): string | undefined {
     return varValue(value, {
         ...setup,
-        required: false,
+        optional: true,
         parse: (val) => {
             if (val == null) return undefined;
             if (typeof val !== "string") throw new TypeError("Not a string");

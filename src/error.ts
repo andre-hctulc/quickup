@@ -11,7 +11,7 @@ export class SetupError extends Error {
 }
 
 function errMessage(varLabel: string, err: VarSetup) {
-    const tags = [err.nullable && "n", err.required === false ? "?" : "*", err.parse && "->"]
+    const tags = [err.nullable && "n", err.optional  ? "?" : "*", err.parse && "->"]
         .filter(Boolean)
         .join(", ");
 

@@ -79,7 +79,7 @@ export class SetupManager {
      * Load the variable value. If the variable is cached, it will return the cached value.
      * @throws `SetupError`
      */
-    async loadSync<T = any>(varName: string, options: LoadVarOptions = {}): Promise<T> {
+    loadSync<T = any>(varName: string, options: LoadVarOptions = {}): T {
         let cached = this._cache[varName];
 
         // return cached value

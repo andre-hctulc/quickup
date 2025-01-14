@@ -1,24 +1,17 @@
 import { SetupError } from "./error.js";
-import { envVar, varValue } from "./helpers.js";
+import { varValue } from "./helpers.js";
 import { VarSetup } from "./types.js";
 
 export type SetupManagerInit = {
     /**
-     * The variable loader function. It should return a promise that resolves to the variable value.
+     * The variable loader function.
+     * If it returns promises ``
      */
-    loadVar: (varName: string) => Promise<any>;
+    loader: (varName: string) => any;
     varLabel?: string;
-    
 };
 
-export type LoadVarOptions = {
-    /**
-     * Loads the variable from environment variables.
-     *
-     * Useful for development.
-     */
-    loadFromEnv?: boolean;
-} & Omit<VarSetup, "name" | "label">;
+export type LoadVarOptions = Omit<VarSetup, "name" | "label">;
 
 /**
  * Manages variables, that are must be loaded async.
@@ -30,7 +23,7 @@ export class SetupManager {
     private _varLabel: string;
 
     constructor(init: SetupManagerInit) {
-        this._loader = init.loadVar;
+        this._loader = init.loader;
         this._varLabel = init.varLabel || "Variable";
     }
 
@@ -50,7 +43,7 @@ export class SetupManager {
      * Load the variable value. If the variable is cached, it will return the cached value.
      * @throws `SetupError`
      */
-    async loadVar<T = any>(varName: string, options: LoadVarOptions = {}): Promise<T> {
+    async load<T = any>(varName: string, options: LoadVarOptions = {}): Promise<T> {
         let cached = this._cache[varName];
 
         // return cached value
@@ -61,22 +54,54 @@ export class SetupManager {
         let value: any;
         const varSetupOptions = { ...options, name: varName, label: this._varLabel || "Variable" };
 
-        // load from env (ignore cache in this case)
-        if (options.loadFromEnv) {
-            value = envVar(varName, varSetupOptions);
+        try {
+            value = await this._loader(varName);
+        } catch (err) {
+            if (err instanceof SetupError) throw err;
+            throw SetupError.fromVarSetup(varSetupOptions, err);
         }
-        // load with loader
-        else {
-            try {
-                value = await this._loader(varName);
-            } catch (err) {
-                if (err instanceof SetupError) throw err;
-                throw SetupError.fromVarSetup(varSetupOptions, err);
-            }
 
-            // validate/parse value
-            value = varValue(value, varSetupOptions);
+        // validate/parse value
+        value = varValue(value, varSetupOptions);
+
+        // update cached var value (async load before)
+        this._cache[varName] = {
+            value,
+            timestamp: Date.now(),
+        };
+
+        return value;
+    }
+
+    /**
+     * **Only supported when the loader function is synchronous.**
+     *
+     * Load the variable value. If the variable is cached, it will return the cached value.
+     * @throws `SetupError`
+     */
+    async loadSync<T = any>(varName: string, options: LoadVarOptions = {}): Promise<T> {
+        let cached = this._cache[varName];
+
+        // return cached value
+        if (cached) {
+            return cached.value;
         }
+
+        let value: any;
+        const varSetupOptions = { ...options, name: varName, label: this._varLabel || "Variable" };
+
+        try {
+            value = this._loader(varName);
+            if (value instanceof Promise) {
+                throw new Error("Loader function is asynchronous");
+            }
+        } catch (err) {
+            if (err instanceof SetupError) throw err;
+            throw SetupError.fromVarSetup(varSetupOptions, err);
+        }
+
+        // validate/parse value
+        value = varValue(value, varSetupOptions);
 
         // update cached var value (async load before)
         this._cache[varName] = {

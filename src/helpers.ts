@@ -12,9 +12,12 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
             return setup.defaultValue as T;
         }
         if (setup.optional) {
-            return undefined as T;
+            if (!(setup.parseNullAndUndefined && setup.parse)) {
+                return undefined as T;
+            }
+        } else {
+            throw SetupError.fromVarSetup(setup);
         }
-        throw SetupError.fromVarSetup(setup);
     }
 
     if (value === null) {
@@ -22,7 +25,9 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
             return setup.defaultValue;
         }
         if (setup.nullable) {
-            return null as T;
+            if (!(setup.parseNullAndUndefined && setup.parse)) {
+                return null as T;
+            }
         } else {
             throw SetupError.fromVarSetup(setup);
         }
@@ -106,9 +111,10 @@ export function varInt(value: any, setup: VarSetup = {}): number {
  */
 export function varOptInt(value: any, setup: VarSetup = {}): number | undefined {
     return varValue(value, {
-        ...setup,
         optional: true,
         nullable: true,
+        ...setup,
+        parseNullAndUndefined: true,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -137,9 +143,10 @@ export function varNum(value: any, setup: VarSetup = {}): number {
  */
 export function varOptNum(value: any, setup: VarSetup = {}): number | undefined {
     return varValue(value, {
-        ...setup,
         optional: true,
         nullable: true,
+        ...setup,
+        parseNullAndUndefined: true,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -159,6 +166,7 @@ export function varBool(value: any, setup: VarSetup = {}): boolean {
         optional: true,
         nullable: true,
         ...setup,
+        parseNullAndUndefined: true,
         parse: (val) =>
             val === true || (typeof val === "string" && val.toLowerCase() === "true") || val === 1,
     });
@@ -182,9 +190,10 @@ export function varStr(value: any, setup: VarSetup = {}): string {
  */
 export function varOptStr(value: any, setup: VarSetup = {}): string | undefined {
     return varValue(value, {
-        ...setup,
         optional: true,
         nullable: true,
+        ...setup,
+        parseNullAndUndefined: true,
         parse: (val) => {
             if (val == null) return undefined;
             if (typeof val !== "string") throw new TypeError("Not a string");

@@ -24,3 +24,11 @@ const apiKey = envVar("API_KEY");
 ```
 
 For invalid values a `SetupError` is thrown.
+
+## Validation logic
+
+Default values are only applied when optional is false!
+
+### Validation order
+
+optional/default check -> nullable/fallback null check -> parse 

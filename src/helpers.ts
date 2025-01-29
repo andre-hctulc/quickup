@@ -1,9 +1,31 @@
 import { SetupError } from "./error.js";
 import { VarSetup } from "./types.js";
 
+/**
+ * Validation order:
+ *
+ * `optional/defaultValue check -> nullable/fallbackNull check -> parse`
+ */
 export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
-    if (value === undefined && !setup.optional) {
+    if (value === undefined) {
+        if (setup.defaultValue !== undefined) {
+            return setup.defaultValue as T;
+        }
+        if (setup.optional) {
+            return undefined as T;
+        }
         throw SetupError.fromVarSetup(setup);
+    }
+
+    if (value === null) {
+        if (setup.fallbackNull && setup.defaultValue !== undefined) {
+            return setup.defaultValue;
+        }
+        if (setup.nullable) {
+            return null as T;
+        } else {
+            throw SetupError.fromVarSetup(setup);
+        }
     }
 
     // user parse
@@ -16,17 +38,6 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
         }
     }
 
-    // parse default value
-    const hasDefault = setup.defaultValue !== undefined;
-
-    if (hasDefault && (value === undefined || (setup.fallbackNull && value === null))) {
-        value = setup.defaultValue;
-    }
-
-    if (value === null && !setup.nullable) {
-        throw SetupError.fromVarSetup(setup);
-    }
-
     return value as T;
 }
 
@@ -36,8 +47,8 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
 export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): string {
     return (
         varValue(process.env[varName], {
-            ...setup,
             name: varName,
+            ...setup,
         }) || ""
     );
 }
@@ -97,6 +108,7 @@ export function varOptInt(value: any, setup: VarSetup = {}): number | undefined 
     return varValue(value, {
         ...setup,
         optional: true,
+        nullable: true,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -127,6 +139,7 @@ export function varOptNum(value: any, setup: VarSetup = {}): number | undefined 
     return varValue(value, {
         ...setup,
         optional: true,
+        nullable: true,
         parse: (val) => {
             if (val == null) return undefined;
             const num = parseInt(val as any);
@@ -137,12 +150,14 @@ export function varOptNum(value: any, setup: VarSetup = {}): number | undefined 
 }
 
 /**
- * Accepts all values.
+ * Accepts all values and is optional and nullable by default.
  *
  * @returns true for true, "true" (case insensitive) and 1, false otherwise.
  */
 export function varBool(value: any, setup: VarSetup = {}): boolean {
     return varValue(value, {
+        optional: true,
+        nullable: true,
         ...setup,
         parse: (val) =>
             val === true || (typeof val === "string" && val.toLowerCase() === "true") || val === 1,
@@ -169,6 +184,7 @@ export function varOptStr(value: any, setup: VarSetup = {}): string | undefined 
     return varValue(value, {
         ...setup,
         optional: true,
+        nullable: true,
         parse: (val) => {
             if (val == null) return undefined;
             if (typeof val !== "string") throw new TypeError("Not a string");

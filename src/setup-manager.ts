@@ -14,8 +14,8 @@ export type SetupManagerInit = {
 export type LoadVarOptions = Omit<VarSetup, "name" | "label">;
 
 /**
- * Manages variables, that are must be loaded async.
- * Values are cached indefinitely after the first load and can only be cleared with `clearCache`.
+ * Manages setup variables from a source (e.g. environment variables, database, etc).
+ * Values are cached indefinitely after firstly loaded and can only be cleared with {@link clearCache} or {@link removeEntry}.
  */
 export class SetupManager {
     private _cache: { [key: string]: { value: any; timestamp: number } } = {};
@@ -74,7 +74,7 @@ export class SetupManager {
     }
 
     /**
-     * **Only supported when the loader function is synchronous.**
+     * **Only supported when the loader function is synchronous or the variable is already cached.**
      *
      * Load the variable value. If the variable is cached, it will return the cached value.
      * @throws `SetupError`

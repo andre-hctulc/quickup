@@ -5,7 +5,7 @@ export class SetupError extends Error {
         super(message);
     }
 
-    static fromVarSetup(err: VarSetup, cause?: unknown) {
+    static fromVarSetup(err: VarSetup, cause: unknown | undefined) {
         return new SetupError(errMessage(err.label || "Environment Variable", err), cause);
     }
 }

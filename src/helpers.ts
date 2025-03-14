@@ -50,7 +50,8 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
  * Environment variable value or empty string.
  */
 export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): string {
-    return varValue(process.env[varName], {
+    // We interpret empty values as not defined for env vars, thus we parse empty values as undefined
+    return varValue(process.env[varName] || undefined, {
         name: varName,
         ...setup,
     });
@@ -72,8 +73,9 @@ export function envVarNum(varName: string, setup: VarSetup = {}): number {
 
 /**
  * Parse an environment variable to a boolean.
+ * If the variable is not defined, false is returned, instead of throwing an error.
  */
-export function envVarBool(varName: string, setup: VarSetup = {}): boolean {
+export function envFlag(varName: string, setup: VarSetup = {}): boolean {
     return varBool(process.env[varName], { name: varName, ...setup });
 }
 

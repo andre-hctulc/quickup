@@ -33,7 +33,7 @@ export class SetupManager {
      */
     getVar(varName: string) {
         const cached = this._cache[varName];
-        if (cached) {
+        if (!cached) {
             throw new SetupError(`${this._varLabel || "Variable"} '${varName}' not loaded yet`);
         }
         return this._cache[varName].value;
@@ -126,5 +126,17 @@ export class SetupManager {
 
     getEntries() {
         return Array.from(Object.entries(this._cache));
+    }
+
+    init(values: Record<string, unknown>) {
+        for (const [key, value] of Object.entries(values)) {
+            if (value === undefined) {
+                continue;
+            }
+            this._cache[key] = {
+                value,
+                timestamp: Date.now(),
+            };
+        }
     }
 }

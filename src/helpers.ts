@@ -32,6 +32,9 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
             throw SetupError.fromVarSetup(setup, undefined);
         }
     }
+    if (!value && setup.notEmpty) {
+        throw SetupError.fromVarSetup(setup, "Value must not be empty");
+    }
 
     // user parse
     if (setup.parse) {

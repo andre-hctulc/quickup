@@ -8,6 +8,7 @@ export type SetupManagerInit = {
      * If it returns promises ``
      */
     loader: (varName: string) => any;
+    loadAll?: () => Promise<Record<string, any>>;
     varLabel?: string;
 };
 
@@ -20,10 +21,12 @@ export type LoadVarOptions = Omit<VarSetup, "name" | "label">;
 export class SetupManager {
     private _cache: { [key: string]: { value: any; timestamp: number } } = {};
     private _loader: (varName: string) => Promise<any>;
+    private _allLoader: (() => Promise<Record<string, any>>) | undefined;
     private _varLabel: string;
 
     constructor(init: SetupManagerInit) {
         this._loader = init.loader;
+        this._allLoader = init.loadAll;
         this._varLabel = init.varLabel || "Variable";
     }
 
@@ -73,6 +76,13 @@ export class SetupManager {
         return value;
     }
 
+    async loadAll(): Promise<Record<string, any>> {
+        if (!this._allLoader) {
+            throw new Error("No loader function available");
+        }
+        return this._allLoader();
+    }
+
     /**
      * **Only supported when the loader function is synchronous or the variable is already cached.**
      *
@@ -120,14 +130,23 @@ export class SetupManager {
         return delete this._cache[varName];
     }
 
+    /**
+     * Checks if a variable entry exists.
+     */
     hasEntry(varName: string): boolean {
         return varName in this._cache;
     }
 
+    /**
+     * Lists all available variable entries.
+     */
     getEntries() {
         return Array.from(Object.entries(this._cache));
     }
 
+    /**
+     * Initializes the setup manager with the given variable values.
+     */
     init(values: Record<string, unknown>) {
         for (const [key, value] of Object.entries(values)) {
             if (value === undefined) {

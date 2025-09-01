@@ -8,7 +8,7 @@ export type SetupManagerInit = {
      * If it returns promises ``
      */
     loader: (varName: string) => any;
-    loadAll?: () => Promise<Record<string, any>>;
+    allLoader?: () => Promise<Record<string, any>>;
     varLabel?: string;
 };
 
@@ -26,7 +26,7 @@ export class SetupManager {
 
     constructor(init: SetupManagerInit) {
         this._loader = init.loader;
-        this._allLoader = init.loadAll;
+        this._allLoader = init.allLoader;
         this._varLabel = init.varLabel || "Variable";
     }
 

@@ -34,7 +34,7 @@ export class SetupManager {
      * Gets the variable value. If the variable is not loaded yet, it will throw an error.
      * @throws `SetupError`
      */
-    getVar(varName: string) {
+    getVar<T = any>(varName: string): T {
         const cached = this._cache[varName];
         if (!cached) {
             throw new SetupError(`${this._varLabel || "Variable"} '${varName}' not loaded yet`);

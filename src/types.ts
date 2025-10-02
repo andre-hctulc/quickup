@@ -9,11 +9,6 @@ export interface VarSetup {
      * Parses the value. If not set, it will return the value as is.
      */
     parse?: (value: unknown) => any;
-    /**
-     * null/undefined will be passed to the parse function if nullable/optional is set
-     * instead of returning null/undefined.
-     */
-    parseNullAndUndefined?: boolean;
     defaultValue?: any;
     /**
      * @default "Environment Variable"
@@ -27,4 +22,12 @@ export interface VarSetup {
      * `!!value` must be true.
      */
     notEmpty?: boolean;
+    /**
+     * Treat `""`, `undefined` and `null` values as undefined.
+     */
+    loose?: boolean;
+    /**
+     * Parse even if the value is `undefined` or `null` (or `""` if loose set).
+     */
+    parseLoose?: boolean;
 }

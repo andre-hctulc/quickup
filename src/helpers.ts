@@ -7,12 +7,16 @@ import { VarSetup } from "./types.js";
  * `optional/defaultValue check -> nullable/fallbackNull check -> parse`
  */
 export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
+    if (setup.loose && (value === null || value === "" || value === null)) {
+        value = undefined;
+    }
+
     if (value === undefined) {
         if (setup.defaultValue !== undefined) {
             return setup.defaultValue as T;
         }
         if (setup.optional) {
-            if (!(setup.parseNullAndUndefined && setup.parse)) {
+            if (!(setup.parseLoose && setup.parse)) {
                 return undefined as T;
             }
         } else {
@@ -25,7 +29,7 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
             return setup.defaultValue;
         }
         if (setup.nullable) {
-            if (!(setup.parseNullAndUndefined && setup.parse)) {
+            if (!(setup.parseLoose && setup.parse)) {
                 return null as T;
             }
         } else {
@@ -120,7 +124,7 @@ export function varBool(value: any, setup: VarSetup = {}): boolean {
         optional: true,
         nullable: true,
         ...setup,
-        parseNullAndUndefined: true,
+        parseLoose: true,
         parse: (val) =>
             val === true || (typeof val === "string" && val.toLowerCase() === "true") || val === 1,
     });

@@ -27,7 +27,7 @@ export interface VarSetup {
      */
     loose?: boolean;
     /**
-     * Parse even if the value is `undefined` or `null` (or `""` if loose set).
+     * If true, loose values are parsed as well.
      */
-    parseLoose?: boolean;
+    parseAll?: boolean;
 }

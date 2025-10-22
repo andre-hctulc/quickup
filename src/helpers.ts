@@ -16,9 +16,7 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
             return setup.defaultValue as T;
         }
         if (setup.optional) {
-            if (!(setup.parseLoose && setup.parse)) {
-                return undefined as T;
-            }
+            return undefined as T;
         } else {
             throw SetupError.fromVarSetup(setup, undefined);
         }
@@ -29,9 +27,7 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
             return setup.defaultValue;
         }
         if (setup.nullable) {
-            if (!(setup.parseLoose && setup.parse)) {
-                return null as T;
-            }
+            return null as T;
         } else {
             throw SetupError.fromVarSetup(setup, undefined);
         }
@@ -54,11 +50,11 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
 }
 
 /**
- * Environment variable value or empty string.
+ * Environment variable value. Does not allow empty values by default.
  */
 export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): string {
-    // We interpret empty values as not defined for env vars, thus we parse empty values as undefined
-    return varValue(process.env[varName] || undefined, {
+    return varValue(process.env[varName], {
+        notEmpty: true,
         name: varName,
         ...setup,
     });
@@ -80,7 +76,7 @@ export function envVarNum(varName: string, setup: VarSetup = {}): number {
 
 /**
  * Parse an environment variable to a boolean.
- * If the variable is not defined, false is returned, instead of throwing an error.
+ *
  */
 export function envFlag(varName: string, setup: VarSetup = {}): boolean {
     return varBool(process.env[varName], { name: varName, ...setup });
@@ -121,12 +117,11 @@ export function varNum(value: any, setup: VarSetup = {}): number {
  */
 export function varBool(value: any, setup: VarSetup = {}): boolean {
     return varValue(value, {
-        optional: true,
-        nullable: true,
-        ...setup,
-        parseLoose: true,
+        defaultValue: false,
+        loose: true,
         parse: (val) =>
             val === true || (typeof val === "string" && val.toLowerCase() === "true") || val === 1,
+        ...setup,
     });
 }
 

@@ -31,13 +31,27 @@ export class SetupManager {
     }
 
     /**
-     * Gets the variable value. If the variable is not loaded yet, it will throw an error.
-     * @throws `SetupError`
+     * Gets the variable value from the cache.
      */
-    getVar<T = any>(varName: string): T {
+    getVar<T = any>(varName: string): T | undefined {
         const cached = this._cache[varName];
         if (!cached) {
-            throw new SetupError(`${this._varLabel || "Variable"} '${varName}' not loaded yet`);
+            return undefined;
+        }
+        return this._cache[varName].value;
+    }
+
+    /**
+     * Gets the variable value from the cache. If the variable is not cached, an error is thrown.
+     * @throws `SetupError`
+     */
+    requireVar<T = any>(varName: string): T {
+        const cached = this._cache[varName];
+        if (!cached) {
+            throw SetupError.fromVarSetup(
+                { name: varName, label: this._varLabel || "Variable" },
+                "Variable not found in cache"
+            );
         }
         return this._cache[varName].value;
     }
@@ -74,13 +88,6 @@ export class SetupManager {
         };
 
         return value;
-    }
-
-    async loadAll(): Promise<Record<string, any>> {
-        if (!this._allLoader) {
-            throw new Error("No loader function available");
-        }
-        return this._allLoader();
     }
 
     /**
@@ -120,6 +127,13 @@ export class SetupManager {
         };
 
         return value;
+    }
+
+    async loadAll(): Promise<Record<string, any>> {
+        if (!this._allLoader) {
+            throw new Error("No loader function available");
+        }
+        return this._allLoader();
     }
 
     clearCache() {

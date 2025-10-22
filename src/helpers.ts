@@ -54,7 +54,7 @@ export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
  */
 export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> = {}): string {
     return varValue(process.env[varName], {
-        notEmpty: true,
+        loose: true,
         name: varName,
         ...setup,
     });
@@ -64,14 +64,22 @@ export function envVar(varName: string, setup: Omit<VarSetup, "name" | "parse"> 
  * Attempt to parse an environment variable to an integer.
  */
 export function envVarInt(varName: string, setup: VarSetup = {}): number {
-    return varInt(process.env[varName], { name: varName, ...setup });
+    return varInt(process.env[varName], {
+        loose: true,
+        name: varName,
+        ...setup,
+    });
 }
 
 /**
  * Attempt to parse an environment variable to a number.
  */
 export function envVarNum(varName: string, setup: VarSetup = {}): number {
-    return varNum(process.env[varName], { name: varName, ...setup });
+    return varNum(process.env[varName], {
+        loose: true,
+        name: varName,
+        ...setup,
+    });
 }
 
 /**
@@ -79,7 +87,11 @@ export function envVarNum(varName: string, setup: VarSetup = {}): number {
  *
  */
 export function envFlag(varName: string, setup: VarSetup = {}): boolean {
-    return varBool(process.env[varName], { name: varName, ...setup });
+    return varBool(process.env[varName], {
+        loose: true,
+        name: varName,
+        ...setup,
+    });
 }
 
 /**

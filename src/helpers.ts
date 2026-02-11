@@ -1,4 +1,6 @@
 import { SetupError } from "./error.js";
+import { VarsRegistry } from "./registry.js";
+import { varName } from "./system.js";
 import { VarSetup } from "./types.js";
 
 /**
@@ -7,6 +9,12 @@ import { VarSetup } from "./types.js";
  * `optional/defaultValue check -> nullable/fallbackNull check -> parse`
  */
 export function varValue<T = any>(value: unknown, setup: VarSetup = {}): T {
+    const vName = varName(setup);
+
+    if (VarsRegistry.isEnabled()) {
+        VarsRegistry.registerVar(vName, setup);
+    }
+
     if (setup.loose && (value === null || value === "" || value === null)) {
         value = undefined;
     }
@@ -161,7 +169,7 @@ export function varStr(value: any, setup: VarSetup = {}): string {
 export function opt<T>(
     fn: (value: any, setup?: VarSetup) => T,
     value: any,
-    setup: VarSetup = {}
+    setup: VarSetup = {},
 ): T | undefined {
     return fn(value, { ...setup, optional: true });
 }

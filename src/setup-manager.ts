@@ -8,11 +8,12 @@ export type SetupManagerInit = {
      * If it returns promises ``
      */
     loader: (varName: string) => any;
-    allLoader?: () => Promise<Record<string, any>>;
     varLabel?: string;
 };
 
-export type LoadVarOptions = Omit<VarSetup, "name" | "label">;
+export type LoadVarOptions = Omit<VarSetup, "name" | "label"> & {
+    noCache?: boolean;
+};
 
 /**
  * Manages setup variables from a source (e.g. environment variables, database, etc).
@@ -21,12 +22,10 @@ export type LoadVarOptions = Omit<VarSetup, "name" | "label">;
 export class SetupManager {
     private _cache: { [key: string]: { value: any; timestamp: number } } = {};
     private _loader: (varName: string) => Promise<any>;
-    private _allLoader: (() => Promise<Record<string, any>>) | undefined;
     private _varLabel: string;
 
     constructor(init: SetupManagerInit) {
         this._loader = init.loader;
-        this._allLoader = init.allLoader;
         this._varLabel = init.varLabel || "Variable";
     }
 
@@ -49,7 +48,7 @@ export class SetupManager {
         const cached = this._cache[varName];
         if (!cached) {
             throw SetupError.fromVarSetup(
-                { name: varName, label: this._varLabel || "Variable" },
+                { name: varName },
                 "Variable not found in cache"
             );
         }
@@ -61,11 +60,13 @@ export class SetupManager {
      * @throws `SetupError`
      */
     async load<T = any>(varName: string, options: LoadVarOptions = {}): Promise<T> {
-        let cached = this._cache[varName];
+        if (!options.noCache) {
+            let cached = this._cache[varName];
 
-        // return cached value
-        if (cached) {
-            return cached.value;
+            // return cached value
+            if (cached) {
+                return cached.value;
+            }
         }
 
         let value: any;
@@ -97,11 +98,13 @@ export class SetupManager {
      * @throws `SetupError`
      */
     loadSync<T = any>(varName: string, options: LoadVarOptions = {}): T {
-        let cached = this._cache[varName];
+        if (!options.noCache) {
+            let cached = this._cache[varName];
 
-        // return cached value
-        if (cached) {
-            return cached.value;
+            // return cached value
+            if (cached) {
+                return cached.value;
+            }
         }
 
         let value: any;
@@ -129,13 +132,6 @@ export class SetupManager {
         return value;
     }
 
-    async loadAll(): Promise<Record<string, any>> {
-        if (!this._allLoader) {
-            throw new Error("No loader function available");
-        }
-        return this._allLoader();
-    }
-
     clearCache() {
         this._cache = {};
     }
@@ -161,7 +157,7 @@ export class SetupManager {
     /**
      * Initializes the setup manager with the given variable values.
      */
-    init(values: Record<string, unknown>) {
+    setVars(values: Record<string, unknown>) {
         for (const [key, value] of Object.entries(values)) {
             if (value === undefined) {
                 continue;

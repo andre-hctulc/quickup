@@ -11,10 +11,6 @@ export interface VarSetup {
     parse?: (value: unknown) => any;
     defaultValue?: any;
     /**
-     * @default "Environment Variable"
-     */
-    label?: string;
-    /**
      * Falls back to default value if value is null. If no default value is set, it will throw an error for null.
      */
     fallbackNull?: boolean;

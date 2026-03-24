@@ -38,5 +38,5 @@ export function envVarNum(varName: string): number {
  * Parse an environment variable to a boolean.
  */
 export function envFlag(varName: string): boolean {
-    return zodEnvVar(varName, z.boolean());
+    return zodEnvVar(varName, z.coerce.boolean());
 }

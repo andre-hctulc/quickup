@@ -1,6 +1,6 @@
+import { ZodType } from "zod";
 import { SetupError } from "./error.js";
-import { varValue } from "./helpers.js";
-import { VarSetup } from "./types.js";
+import { zodVar } from "./helpers.js";
 
 export type SetupManagerInit = {
     /**
@@ -11,7 +11,7 @@ export type SetupManagerInit = {
     varLabel?: string;
 };
 
-export type LoadVarOptions = Omit<VarSetup, "name" | "label"> & {
+export type LoadVarOptions = {
     noCache?: boolean;
 };
 
@@ -47,10 +47,7 @@ export class SetupManager {
     requireVar<T = any>(varName: string): T {
         const cached = this._cache[varName];
         if (!cached) {
-            throw SetupError.fromVarSetup(
-                { name: varName },
-                "Variable not found in cache"
-            );
+            throw new SetupError(varName, new Error("Variable not found in cache"));
         }
         return this._cache[varName].value;
     }
@@ -59,7 +56,7 @@ export class SetupManager {
      * Load the variable value. If the variable is cached, it will return the cached value.
      * @throws `SetupError`
      */
-    async load<T = any>(varName: string, options: LoadVarOptions = {}): Promise<T> {
+    async load<T = any>(varName: string, schema?: ZodType<T>, options: LoadVarOptions = {}): Promise<T> {
         if (!options.noCache) {
             let cached = this._cache[varName];
 
@@ -70,17 +67,18 @@ export class SetupManager {
         }
 
         let value: any;
-        const varSetupOptions = { ...options, name: varName, label: this._varLabel || "Variable" };
 
         try {
             value = await this._loader(varName);
         } catch (err) {
             if (err instanceof SetupError) throw err;
-            throw SetupError.fromVarSetup(varSetupOptions, err);
+            throw new SetupError(varName, err);
         }
 
-        // validate/parse value
-        value = varValue(value, varSetupOptions);
+        if (schema) {
+            // validate/parse value
+            value = zodVar(value, schema);
+        }
 
         // update cached var value (async load before)
         this._cache[varName] = {
@@ -97,7 +95,7 @@ export class SetupManager {
      * Load the variable value. If the variable is cached, it will return the cached value.
      * @throws `SetupError`
      */
-    loadSync<T = any>(varName: string, options: LoadVarOptions = {}): T {
+    loadSync<T = any>(varName: string, schema?: ZodType<T>, options: LoadVarOptions = {}): T {
         if (!options.noCache) {
             let cached = this._cache[varName];
 
@@ -108,7 +106,6 @@ export class SetupManager {
         }
 
         let value: any;
-        const varSetupOptions = { ...options, name: varName, label: this._varLabel || "Variable" };
 
         try {
             value = this._loader(varName);
@@ -117,11 +114,13 @@ export class SetupManager {
             }
         } catch (err) {
             if (err instanceof SetupError) throw err;
-            throw SetupError.fromVarSetup(varSetupOptions, err);
+            throw new SetupError(varName, err);
         }
 
-        // validate/parse value
-        value = varValue(value, varSetupOptions);
+        if(schema) {
+            // validate/parse value
+            value = zodVar(value, schema);
+        }
 
         // update cached var value (async load before)
         this._cache[varName] = {

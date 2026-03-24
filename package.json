@@ -18,5 +18,8 @@
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^24.1.0"
+    },
+    "dependencies": {
+        "zod": "^4.3.6"
     }
 }

@@ -1,4 +1,3 @@
-import { VarSetup } from "./types.js";
 
 /**
  * A registry for storing variable definitions.
@@ -7,17 +6,17 @@ import { VarSetup } from "./types.js";
 export abstract class VarsRegistry {
     static #enabled = false;
 
-    static #registry: Record<string, VarSetup> = {};
+    static #registry: Record<string, any> = {};
 
-    static registerVar(name: string, def: VarSetup) {
+    static registerVar(name: string, def: any) {
         this.#registry[name] = def;
     }
 
-    static getVar(name: string): VarSetup {
+    static getVar(name: string): any {
         return this.#registry[name];
     }
 
-    static getAllVars(): Record<string, VarSetup> {
+    static getAllVars(): Record<string, any> {
         return { ...this.#registry };
     }
 

@@ -14,24 +14,31 @@ export function zodEnvVar<T>(varName: string, schema: z.ZodType<T>): T {
 }
 
 /**
- * Environment variable value. Does not allow empty values by default.
+ * Environment variable value. Does not allow empty values.
  */
 export function envVar(varName: string): string {
     return zodEnvVar(varName, z.string().min(1));
 }
 
 /**
+ * Environment variable value. Allows empty values.
+ */
+export function envVarOpt(varName: string): string {
+    return zodEnvVar(varName, z.string().optional().default(""));
+}
+
+/**
  * Attempt to parse an environment variable to an integer.
  */
 export function envVarInt(varName: string): number {
-    return zodEnvVar(varName, z.number().int());
+    return zodEnvVar(varName, z.coerce.number().int());
 }
 
 /**
  * Attempt to parse an environment variable to a number.
  */
 export function envVarNum(varName: string): number {
-    return zodEnvVar(varName, z.number());
+    return zodEnvVar(varName, z.coerce.number());
 }
 
 /**

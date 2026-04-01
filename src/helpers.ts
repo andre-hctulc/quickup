@@ -16,8 +16,11 @@ export function zodEnvVar<T>(varName: string, schema: z.ZodType<T>): T {
 /**
  * Environment variable value. Does not allow empty values.
  */
-export function envVar(varName: string): string {
-    return zodEnvVar(varName, z.string().min(1));
+export function envVar(varName: string, defaultValue?: string): string {
+    return zodEnvVar(
+        varName,
+        defaultValue === undefined ? z.string().min(1) : z.string().min(1).default(defaultValue),
+    );
 }
 
 /**
@@ -30,23 +33,34 @@ export function envVarOpt(varName: string): string {
 /**
  * Attempt to parse an environment variable to an integer.
  */
-export function envVarInt(varName: string): number {
-    return zodEnvVar(varName, z.coerce.number().int());
+export function envVarInt(varName: string, defaultValue?: number): number {
+    return zodEnvVar(
+        varName,
+        defaultValue === undefined ? z.coerce.number().int() : z.coerce.number().int().default(defaultValue),
+    );
 }
 
 /**
  * Attempt to parse an environment variable to a number.
  */
-export function envVarNum(varName: string): number {
-    return zodEnvVar(varName, z.coerce.number());
+export function envVarNum(varName: string, defaultValue?: number): number {
+    return zodEnvVar(
+        varName,
+        defaultValue === undefined ? z.coerce.number() : z.coerce.number().default(defaultValue),
+    );
 }
 
 /**
  * Parse an environment variable to a boolean.
  */
-export function envFlag(varName: string): boolean {
+export function envFlag(varName: string, defaultValue?: boolean): boolean {
     return zodEnvVar(
         varName,
-        z.transform((v) => v === "true" || v === "1" || v === true || v === 1),
+        z.transform((v) => {
+            if (v === undefined && defaultValue !== undefined) {
+                return defaultValue;
+            }
+            return v === "true" || v === "1" || v === true || v === 1;
+        }),
     );
 }

@@ -21,7 +21,7 @@ export function zodNumVar(value: unknown, defaultValue?: number): number {
     return zodVar(value, z.coerce.number(), "unknown");
 }
 
-export function zodFlagVar(value: unknown, defaultValue?: boolean): boolean {
+export function zodFlag(value: unknown, defaultValue?: boolean): boolean {
     return zodVar(
         value,
         z.transform((v) => {

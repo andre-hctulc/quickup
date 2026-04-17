@@ -33,14 +33,18 @@ export function zodFlag(value: unknown, defaultValue?: boolean): boolean {
     return zodVar(value, FlagSchema(defaultValue), "unknown");
 }
 
-const ListSchema = (separator?: string, defaultValue?: string[]) =>
+const ListSchema = (separator?: string, defaultValue?: string[], trim = false) =>
     z
         .transform((v) => {
             if (v === undefined && defaultValue !== undefined) {
                 return defaultValue;
             }
             if (typeof v === "string") {
-                return v.split(separator || ",");
+                const splitted = v.split(separator || ",");
+                if (trim) {
+                    return splitted.map((s) => s.trim()).filter(Boolean);
+                }
+                return splitted;
             }
             return v;
         })
@@ -50,8 +54,13 @@ export function zodEnvVar<T>(varName: string, schema: z.ZodType<T>, defaultValue
     return zodVar(process.env[varName] || defaultValue, schema, varName);
 }
 
-export function zodListVar(value: unknown, separator?: string, defaultValue?: string[]): string[] {
-    return zodVar(value, ListSchema(separator, defaultValue), "unknown");
+export function zodListVar(
+    value: unknown,
+    separator?: string,
+    defaultValue?: string[],
+    trim?: boolean,
+): string[] {
+    return zodVar(value, ListSchema(separator, defaultValue, trim), "unknown");
 }
 
 /**
@@ -61,8 +70,8 @@ export function envVar(varName: string, defaultValue?: string): string {
     return zodEnvVar(varName, z.string().min(defaultValue === "" ? 0 : 1), defaultValue);
 }
 
-export function envVarList(varName: string, separator?: string, defaultValue?: string[]): string[] {
-    return zodEnvVar(varName, ListSchema(separator, defaultValue));
+export function envVarList(varName: string, separator?: string, defaultValue?: string[], trim?: boolean): string[] {
+    return zodEnvVar(varName, ListSchema(separator, defaultValue, trim));
 }
 
 /**

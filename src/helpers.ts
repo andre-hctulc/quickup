@@ -21,21 +21,37 @@ export function zodNumVar(value: unknown, defaultValue?: number): number {
     return zodVar(value, z.coerce.number(), "unknown");
 }
 
+const FlagSchema = (defaultValue?: boolean) =>
+    z.transform((v) => {
+        if (v === undefined && defaultValue !== undefined) {
+            return defaultValue;
+        }
+        return v === "true" || v === "1" || v === true || v === 1;
+    });
+
 export function zodFlag(value: unknown, defaultValue?: boolean): boolean {
-    return zodVar(
-        value,
-        z.transform((v) => {
+    return zodVar(value, FlagSchema(defaultValue), "unknown");
+}
+
+const ListSchema = (separator?: string, defaultValue?: string[]) =>
+    z
+        .transform((v) => {
             if (v === undefined && defaultValue !== undefined) {
                 return defaultValue;
             }
-            return v === "true" || v === "1" || v === true || v === 1;
-        }),
-        "unknown",
-    );
-}
+            if (typeof v === "string") {
+                return v.split(separator || ",");
+            }
+            return v;
+        })
+        .pipe(z.array(z.string().min(defaultValue ? 0 : 1)));
 
 export function zodEnvVar<T>(varName: string, schema: z.ZodType<T>, defaultValue?: T): T {
     return zodVar(process.env[varName] || defaultValue, schema, varName);
+}
+
+export function zodListVar(value: unknown, separator?: string, defaultValue?: string[]): string[] {
+    return zodVar(value, ListSchema(separator, defaultValue), "unknown");
 }
 
 /**
@@ -43,6 +59,10 @@ export function zodEnvVar<T>(varName: string, schema: z.ZodType<T>, defaultValue
  */
 export function envVar(varName: string, defaultValue?: string): string {
     return zodEnvVar(varName, z.string().min(defaultValue === "" ? 0 : 1), defaultValue);
+}
+
+export function envVarList(varName: string, separator?: string, defaultValue?: string[]): string[] {
+    return zodEnvVar(varName, ListSchema(separator, defaultValue));
 }
 
 /**
@@ -63,13 +83,5 @@ export function envVarNum(varName: string, defaultValue?: number): number {
  * Parse an environment variable to a boolean.
  */
 export function envFlag(varName: string, defaultValue?: boolean): boolean {
-    return zodEnvVar(
-        varName,
-        z.transform((v) => {
-            if (v === undefined && defaultValue !== undefined) {
-                return defaultValue;
-            }
-            return v === "true" || v === "1" || v === true || v === 1;
-        }),
-    );
+    return zodEnvVar(varName, FlagSchema(defaultValue));
 }

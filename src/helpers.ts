@@ -40,21 +40,27 @@ interface ListOptions {
      * @default true
      */
     trim?: boolean;
+    /**
+     * @default true
+     */
+    filterEmpty?: boolean;
 }
 
-const ListSchema = (options: ListOptions = {}) => {
-    const { separator, defaultValue, trim } = options;
+const ListSchema = ({ separator, defaultValue, trim, filterEmpty }: ListOptions = {}) => {
     return z
         .transform((v) => {
             if (v === undefined && defaultValue !== undefined) {
                 return defaultValue;
             }
             if (typeof v === "string") {
-                const splitted = v.split(separator || ",");
+                let values = v.split(separator || ",");
                 if (trim ?? true) {
-                    return splitted.map((s) => s.trim()).filter(Boolean);
+                    values = values.map((s) => s.trim());
                 }
-                return splitted;
+                if (filterEmpty) {
+                    values = values.filter(Boolean);
+                }
+                return values;
             }
             return v;
         })

@@ -36,6 +36,9 @@ export function zodFlag(value: unknown, defaultValue?: boolean): boolean {
 interface ListOptions {
     separator?: string;
     defaultValue?: string[];
+    /**
+     * @default true
+     */
     trim?: boolean;
 }
 
@@ -48,7 +51,7 @@ const ListSchema = (options: ListOptions = {}) => {
             }
             if (typeof v === "string") {
                 const splitted = v.split(separator || ",");
-                if (trim) {
+                if (trim ?? true) {
                     return splitted.map((s) => s.trim()).filter(Boolean);
                 }
                 return splitted;
